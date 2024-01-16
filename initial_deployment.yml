@@ -19,7 +19,7 @@
     - name: Create I2P User
       ansible.builtin.user:
         name: i2p
-
+#System Optmization
     - name: Updated limits.conf
       become: true
       ansible.builtin.shell: |
@@ -88,7 +88,7 @@
              chown -R i2p:i2p /home/i2p/
              chmod +x /home/i2p/i2p/i2prouter
              chmod +x /etc/rc.local
-             chmod +x /home/i2p/upload.sh
+
 #Create firewall rule to allow port I2P traffic. Note UFW is enable on our base image already.            
     - name: Enable and set UFW rules
       become: true
