@@ -29,6 +29,7 @@
   loop:
     - "* soft nofile 100000"
     - "* hard nofile 100000"
+    
 # Need to install Java 8 for I2P.
     - name: Install JRE
       apt:
@@ -57,21 +58,21 @@
 #Instead of installing I2P+ from the java file, we will use an already compiled version.
     - name: Download I2P
       ansible.builtin.get_url:
-         url: https://stormycloud.org/i2p/i2p.zip 
+         url: https://stormycloud.org/i2p/i2p_plus.zip
          dest: /tmp
          username: "{{ wget_user }}"
          password: "{{ wget_pw }}"
 #Instead of installing I2P+ from the java file, we will use an already compiled version.
     - name: Download DOT_I2P
       ansible.builtin.get_url:
-         url: https://stormycloud.org/i2p/dotnet_i2p.zip
+         url: https://stormycloud.org/i2p/doti2p_plus.zip
          dest: /tmp
          username: "{{ wget_user }}"
          password: "{{ wget_pw }}"
 
     - name: Extract /home/i2p/i2p
       unarchive:
-         src: /tmp/i2p.zip
+         src: /tmp/i2p_plus.zip
          dest: /home/i2p/
          remote_src: yes
 
@@ -133,5 +134,5 @@
 
     - name: Delete i2p.zip
       ansible.builtin.file:
-        path: /tmp/i2p.zip
+        path: /tmp/i2p_plus.zip
         state: absent              
