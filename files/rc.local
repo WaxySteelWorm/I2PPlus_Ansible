@@ -1,0 +1,3 @@
+#!/bin/bash
+/bin/su i2p -c "/home/i2p/i2p/i2prouter start"
+exit 0

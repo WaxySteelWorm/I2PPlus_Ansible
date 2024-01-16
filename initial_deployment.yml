@@ -1,0 +1,122 @@
+---
+
+- hosts: i2p
+  vars_files:
+    - files/vault.yml
+  pre_tasks:
+# Need to update apt-get to ensure that the latest packages are installed.
+   - name: Update Apt-Get
+     become: true
+     apt: update_cache=yes force_apt_get=yes upgrade=yes
+
+  tasks:
+
+    - name: Set SSH Key
+      become: true
+      ansible.builtin.shell: |
+            echo ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHrODiVwzLuqJOOUj8RfL+X9jn8K/wMujouCelQvRbJs >> /home/dfields/.ssh/authorized_keys
+# Need to create I2P user.
+    - name: Create I2P User
+      ansible.builtin.user:
+        name: i2p
+
+    - name: Updated limits.conf
+      become: true
+      ansible.builtin.shell: |
+            echo * soft nofile 100000 >> /etc/security/limits.conf
+            echo * hard nofile 100000 >> /etc/security/limits.conf
+# Need to install Java 8 for I2P.
+    - name: Install JRE
+      apt:
+        name: default-jre
+        state: present
+# Need to install unzip for I2P.
+    - name: Unzip
+      apt:
+        name: unzip
+        state: present
+# Used to monitor  memory  and  swap  usage  and  allocate or deallocate swap space as needed.
+    - name: SwapSpace
+      apt:
+        name: swapspace
+        state: present
+#ZRAM is a Linux kernel module that allows the creation of Swap devices on memory, which are compressed and stored in RAM. 
+    - name: Zram
+      apt:
+        name: zram-config
+        state: present
+# Used to limit ssh brute force attacks.
+    - name: fail2ban
+      apt:
+        name: fail2ban
+        state: present
+#Instead of installing I2P+ from the java file, we will use an already compiled version.
+    - name: Download I2P
+      ansible.builtin.get_url:
+         url: https://stormycloud.org/i2p/i2p.zip 
+         dest: /tmp
+         username: "{{ wget_user }}"
+         password: "{{ wget_pw }}"
+#Instead of installing I2P+ from the java file, we will use an already compiled version.
+    - name: Download DOT_I2P
+      ansible.builtin.get_url:
+         url: https://stormycloud.org/i2p/dotnet_i2p.zip
+         dest: /tmp
+         username: "{{ wget_user }}"
+         password: "{{ wget_pw }}"
+
+    - name: Extract /home/i2p/i2p
+      unarchive:
+         src: /tmp/i2p.zip
+         dest: /home/i2p/
+         remote_src: yes
+
+    - name: Extract /home/.i2p/
+      unarchive:
+         src: /tmp/dotnet_i2p.zip
+         dest: /home/i2p/
+         remote_src: yes
+#Creating RC.local file to start I2P on boot.
+    - name: Move rc.local file
+      copy:
+        src: files/rc.local
+        dest: /etc/rc.local
+#Settomg permissions for I2P.
+    - name: Fix I2P Permissions
+      become: true
+      ansible.builtin.shell: |
+             chown -R i2p:i2p /home/i2p/
+             chmod +x /home/i2p/i2p/i2prouter
+             chmod +x /etc/rc.local
+             chmod +x /home/i2p/upload.sh
+#Create firewall rule to allow port I2P traffic. Note UFW is enable on our base image already.            
+    - name: Enable and set UFW rules
+      become: true
+      become_user: root
+      ansible.builtin.shell: |
+            ufw allow 7777
+            ufw default allow outgoing
+            ufw default deny incoming
+  # Need to start I2P to generate configuration files.     
+    - name: Start I2P
+      ansible.builtin.shell: /bin/su i2p -c "/home/i2p/i2p/i2prouter start"
+# Need to stop I2P to add ports to configuration file.
+    - name: Stop I2P
+      ansible.builtin.shell: /bin/su i2p -c "/home/i2p/i2p/i2prouter stop"
+# We use static ports for I2P. This is to ensure that the ports are always the same and across all I2P instances.
+    - name: Add Ports
+      become: true
+      ansible.builtin.shell: |
+            echo i2np.udp.port=7777 >> /home/i2p/.i2p/router.config
+            echo i2np.udp.internalPort=7777 >> /home/i2p/.i2p/router.config
+
+    - name: Start I2P
+      ansible.builtin.shell: /bin/su i2p -c "/home/i2p/i2p/i2prouter start"
+# Unable to use already created keystore file. Need to delete and manually add new one.
+    - name: Delete keystore file
+      file:
+        path: /home/i2p/.i2p/keystore/family-stormycloud.ks
+        state: absent
+           
+    - name: Start Fail2Ban
+      ansible.builtin.shell: systemctl restart fail2ban    
