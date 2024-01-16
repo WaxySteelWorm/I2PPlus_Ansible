@@ -19,12 +19,16 @@
     - name: Create I2P User
       ansible.builtin.user:
         name: i2p
-#System Optmization
-    - name: Updated limits.conf
-      become: true
-      ansible.builtin.shell: |
-            echo * soft nofile 100000 >> /etc/security/limits.conf
-            echo * hard nofile 100000 >> /etc/security/limits.conf
+#System Optimization
+- name: Updated limits.conf
+  become: true
+  ansible.builtin.lineinfile:
+    path: /etc/security/limits.conf
+    line: "{{ item }}"
+    insertafter: EOF
+  loop:
+    - "* soft nofile 100000"
+    - "* hard nofile 100000"
 # Need to install Java 8 for I2P.
     - name: Install JRE
       apt:
