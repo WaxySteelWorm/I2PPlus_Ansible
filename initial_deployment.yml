@@ -120,3 +120,14 @@
            
     - name: Start Fail2Ban
       ansible.builtin.shell: systemctl restart fail2ban    
+
+#Delete the zip files that were downloaded.
+    - name: Delete dotnet_i2p.zip
+      ansible.builtin.file:
+        path: /tmp/dotnet_i2p.zip
+        state: absent      
+
+    - name: Delete i2p.zip
+      ansible.builtin.file:
+        path: /tmp/i2p.zip
+        state: absent              
