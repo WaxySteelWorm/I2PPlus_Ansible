@@ -20,13 +20,14 @@
       ansible.builtin.user:
         name: i2p
 #System Optimization
+
     - name: Updated limits.conf
       become: true
       ansible.builtin.lineinfile:
-      path: /etc/security/limits.conf
-      line: "{{ item }}"
-      insertafter: EOF
-      loop:
+        path: /etc/security/limits.conf
+        line: "{{ item }}"
+        insertafter: EOF
+        loop:
           - "* soft nofile 100000"
           - "* hard nofile 100000"
     
