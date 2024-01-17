@@ -23,12 +23,9 @@
 
     - name: Updated limits.conf
       become: true
-      ansible.builtin.lineinfile:
-        path: /etc/security/limits.conf
-        insertafter: EOF
-        loop:
-          - "* soft nofile 100000"
-          - "* hard nofile 100000"
+      ansible.builtin.shell: |
+            echo * soft nofile 100000 > /etc/security/limits.conf
+            echo * hard nofile 100000 >> /etc/security/limits.conf
     
 # Need to install Java 8 for I2P.
     - name: Install JRE
