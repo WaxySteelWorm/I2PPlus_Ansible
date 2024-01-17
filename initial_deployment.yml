@@ -75,7 +75,7 @@
 
     - name: Extract /home/.i2p/
       unarchive:
-         src: /tmp/dotnet_i2p.zip
+         src: /tmp/doti2p_plus.zip
          dest: /home/i2p/
          remote_src: yes
 #Creating RC.local file to start I2P on boot.
@@ -126,7 +126,7 @@
 #Delete the zip files that were downloaded.
     - name: Delete dotnet_i2p.zip
       ansible.builtin.file:
-        path: /tmp/dotnet_i2p.zip
+        path: /tmp/doti2p_plus.zip
         state: absent      
 
     - name: Delete i2p.zip
