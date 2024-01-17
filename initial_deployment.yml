@@ -25,7 +25,6 @@
       become: true
       ansible.builtin.lineinfile:
         path: /etc/security/limits.conf
-        line: "{{ item }}"
         insertafter: EOF
         loop:
           - "* soft nofile 100000"
