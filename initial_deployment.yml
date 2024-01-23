@@ -20,15 +20,12 @@
       ansible.builtin.user:
         name: i2p
 #System Optimization
-- name: Updated limits.conf
-  become: true
-  ansible.builtin.lineinfile:
-    path: /etc/security/limits.conf
-    line: "{{ item }}"
-    insertafter: EOF
-  loop:
-    - "* soft nofile 100000"
-    - "* hard nofile 100000"
+
+    - name: Updated limits.conf
+      become: true
+      ansible.builtin.shell: |
+            echo * soft nofile 100000 > /etc/security/limits.conf
+            echo * hard nofile 100000 >> /etc/security/limits.conf
     
 # Need to install Java 8 for I2P.
     - name: Install JRE
@@ -78,7 +75,7 @@
 
     - name: Extract /home/.i2p/
       unarchive:
-         src: /tmp/dotnet_i2p.zip
+         src: /tmp/doti2p_plus.zip
          dest: /home/i2p/
          remote_src: yes
 #Creating RC.local file to start I2P on boot.
@@ -129,7 +126,7 @@
 #Delete the zip files that were downloaded.
     - name: Delete dotnet_i2p.zip
       ansible.builtin.file:
-        path: /tmp/dotnet_i2p.zip
+        path: /tmp/doti2p_plus.zip
         state: absent      
 
     - name: Delete i2p.zip
