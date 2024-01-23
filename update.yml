@@ -1,0 +1,17 @@
+---
+
+- hosts: i2p
+  vars_files:
+    - files/vault.yml
+  pre_tasks:
+# Need to update apt-get to ensure that the latest packages are installed.
+   - name: Update Apt-Get
+     become: true
+     apt: update_cache=yes force_apt_get=yes upgrade=yes
+
+  tasks:
+
+    - name: Delete /etc/ssh/sshd_config.d/50-cloud-init.conf
+      file:
+        path: /etc/ssh/sshd_config.d/50-cloud-init.conf
+        state: absent
