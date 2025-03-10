@@ -15,43 +15,19 @@
       become: true
       ansible.builtin.shell: |
             echo ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHrODiVwzLuqJOOUj8RfL+X9jn8K/wMujouCelQvRbJs >> /home/dfields/.ssh/authorized_keys
+
 # Need to create I2P user.
     - name: Create I2P User
       ansible.builtin.user:
         name: i2p
-#System Optimization
 
-    - name: Updated limits.conf
-      become: true
-      ansible.builtin.shell: |
-            echo * soft nofile 100000 > /etc/security/limits.conf
-            echo * hard nofile 100000 >> /etc/security/limits.conf
-    
 # Need to install Java 8 for I2P.
     - name: Install JRE
       apt:
         name: default-jre
         state: present
-# Need to install unzip for I2P.
-    - name: Unzip
-      apt:
-        name: unzip
-        state: present
-# Used to monitor  memory  and  swap  usage  and  allocate or deallocate swap space as needed.
-    - name: SwapSpace
-      apt:
-        name: swapspace
-        state: present
-#ZRAM is a Linux kernel module that allows the creation of Swap devices on memory, which are compressed and stored in RAM. 
-    - name: Zram
-      apt:
-        name: zram-config
-        state: present
-# Used to limit ssh brute force attacks.
-    - name: fail2ban
-      apt:
-        name: fail2ban
-        state: present
+
+
 #Instead of installing I2P+ from the java file, we will use an already compiled version.
     - name: Download I2P
       ansible.builtin.get_url:
@@ -111,17 +87,25 @@
       ansible.builtin.shell: |
             echo i2np.udp.port=7777 >> /home/i2p/.i2p/router.config
             echo i2np.udp.internalPort=7777 >> /home/i2p/.i2p/router.config
+            echo router.sharePercentage=90 >> /home/i2p/.i2p/router.config
+            echo router.updateDevSU3=true >> /home/i2p/.i2p/router.config
+            echo router.updateDevSU3URL=http://skank.i2p/dev/i2pupdate.zip >> /home/i2p/.i2p/router.config
+            echo router.updatePolicy=install >> /home/i2p/.i2p/router.config
+            echo router.updateThroughProxy=true >> /home/i2p/.i2p/router.config
+            echo router.updateURL=http://echelon.i2p/i2p/i2pupdate.su2,http://stats.i2p/i2p/i2pupdate.su2 >> /home/i2p/.i2p/router.config
+            echo router.updateUnsigned=true >> /home/i2p/.i2p/router.config
+            echo router.updateUnsignedURL=http://skank.i2p/dev/i2pupdate.zip >> /home/i2p/.i2p/router.config
+            echo routerconsole.advanced=true >> /home/i2p/.i2p/router.config
+            echo i2np.bandwidth.inboundBurstKBytes=1953105 >>  /home/i2p/.i2p/router.config
+            echo i2np.bandwidth.inboundBurstKBytesPerSecond=97655 >>  /home/i2p/.i2p/router.config
+            echo i2np.bandwidth.inboundKBytesPerSecond=97605 >>  /home/i2p/.i2p/router.config
+            echo i2np.bandwidth.outboundBurstKBytes=1953105 >>  /home/i2p/.i2p/router.config
+            echo i2np.bandwidth.outboundBurstKBytesPerSecond=97655 >>  /home/i2p/.i2p/router.config
+            echo i2np.bandwidth.outboundBurstKBytesPerSecond=97655 >>  /home/i2p/.i2p/router.config
+            echo router.floodfillParticipant=true >> /home/i2p/.i2p/router.config
 
     - name: Start I2P
       ansible.builtin.shell: /bin/su i2p -c "/home/i2p/i2p/i2prouter start"
-# Unable to use already created keystore file. Need to delete and manually add new one.
-    - name: Delete keystore file
-      file:
-        path: /home/i2p/.i2p/keystore/family-stormycloud.ks
-        state: absent
-           
-    - name: Start Fail2Ban
-      ansible.builtin.shell: systemctl restart fail2ban    
 
 #Delete the zip files that were downloaded.
     - name: Delete dotnet_i2p.zip
