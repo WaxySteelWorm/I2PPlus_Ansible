@@ -54,18 +54,13 @@
          src: /tmp/doti2p_plus.zip
          dest: /home/i2p/
          remote_src: yes
-#Creating RC.local file to start I2P on boot.
-    - name: Move rc.local file
-      copy:
-        src: files/rc.local
-        dest: /etc/rc.local
+
 #Settomg permissions for I2P.
     - name: Fix I2P Permissions
       become: true
       ansible.builtin.shell: |
              chown -R i2p:i2p /home/i2p/
              chmod +x /home/i2p/i2p/i2prouter
-             chmod +x /etc/rc.local
 
 #Create firewall rule to allow port I2P traffic. Note UFW is enable on our base image already.            
     - name: Enable and set UFW rules
@@ -75,6 +70,7 @@
             ufw allow 7777
             ufw default allow outgoing
             ufw default deny incoming
+
   # Need to start I2P to generate configuration files.     
     - name: Start I2P
       ansible.builtin.shell: /bin/su i2p -c "/home/i2p/i2p/i2prouter start"
@@ -104,8 +100,39 @@
             echo i2np.bandwidth.outboundBurstKBytesPerSecond=97655 >>  /home/i2p/.i2p/router.config
             echo router.floodfillParticipant=true >> /home/i2p/.i2p/router.config
 
-    - name: Start I2P
-      ansible.builtin.shell: /bin/su i2p -c "/home/i2p/i2p/i2prouter start"
+    - name: Create the i2p.service file
+      copy:
+        dest: /etc/systemd/system/i2p.service
+        content: |
+          [Unit]
+          Description=I2P Service
+          After=network.target
+
+          [Service]
+          Type=forking
+          User=i2p
+          ExecStart=/home/i2p/i2p/i2prouter start
+          ExecStop=/home/i2p/i2p/i2prouter stop
+          Restart=on-failure
+
+          [Install]
+          WantedBy=multi-user.target
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Reload systemd daemon
+      command: systemctl daemon-reload
+
+    - name: Enable the i2p service
+      systemd:
+        name: i2p
+        enabled: yes
+
+    - name: Start the i2p service
+      systemd:
+        name: i2p
+        state: started
 
 #Delete the zip files that were downloaded.
     - name: Delete dotnet_i2p.zip
@@ -117,3 +144,72 @@
       ansible.builtin.file:
         path: /tmp/i2p_plus.zip
         state: absent              
+
+#Custom Config 
+    - name: Install TinyProxy
+      apt:
+        name: tinyproxy
+        state: present
+
+- name: Deploy tinyproxy configuration from vault
+  copy:
+    content: "{{ tinyproxy_config }}"
+    dest: /etc/tinyproxy/tinyproxy.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Install Tor and configure repository
+  hosts: all
+  become: true
+  tasks:
+
+    - name: Install apt-transport-https
+      apt:
+        name: apt-transport-https
+        state: present
+        update_cache: yes
+
+    - name: Add Tor repository to sources.list.d
+      copy:
+        dest: /etc/apt/sources.list.d/tor.list
+        content: |
+          deb     [signed-by=/usr/share/keyrings/deb.torproject.org-keyring.gpg] https://deb.torproject.org/torproject.org jammy main
+          deb-src [signed-by=/usr/share/keyrings/deb.torproject.org-keyring.gpg] https://deb.torproject.org/torproject.org jammy main
+      owner: root
+      group: root
+      mode: '0644'
+
+    - name: Add the GPG key for Tor packages
+      command: >
+        wget -qO- https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc |
+        gpg --dearmor |
+        tee /usr/share/keyrings/deb.torproject.org-keyring.gpg >/dev/null
+      args:
+        creates: /usr/share/keyrings/deb.torproject.org-keyring.gpg
+
+    - name: Update package cache
+      apt:
+        update_cache: yes
+
+    - name: Install Tor and deb.torproject.org-keyring
+      apt:
+        name:
+          - tor
+          - deb.torproject.org-keyring
+        state: present          
+
+
+    - name: Download and execute New Relic install script
+      shell: |
+        curl -Ls https://download.newrelic.com/install/newrelic-cli/scripts/install.sh | bash
+
+    - name: Configure New Relic CLI with API key and account ID
+      shell: |
+        sudo NEW_RELIC_API_KEY={{ new_relic_api_key }} NEW_RELIC_ACCOUNT_ID={{ new_relic_account_id }} /usr/local/bin/newrelic install -y --tag Type:i2p
+      environment:
+        NEW_RELIC_API_KEY: "{{ new_relic_api_key }}"
+        NEW_RELIC_ACCOUNT_ID: "{{ new_relic_account_id }}"
+      args:
+        executable: /bin/bash
+
