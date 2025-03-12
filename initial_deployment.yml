@@ -159,11 +159,6 @@
         group: root
         mode: '0644'
 
-- name: Install Tor and configure repository
-  hosts: all
-  become: true
-  tasks:
-
     - name: Install apt-transport-https
       apt:
         name: apt-transport-https
