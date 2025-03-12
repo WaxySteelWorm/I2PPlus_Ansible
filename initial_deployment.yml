@@ -25,6 +25,12 @@
         name: default-jre
         state: present
 
+    - name: Install unzip
+      apt:
+        name: unzip
+        state: present
+
+
     # Instead of installing I2P+ from the java file, we will use an already compiled version.
     - name: Download I2P
       ansible.builtin.get_url:
