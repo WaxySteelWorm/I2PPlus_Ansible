@@ -1,5 +1,5 @@
 ---
-- hosts: i2p
+- hosts: test
   vars_files:
     - files/vault.yml
   pre_tasks:
