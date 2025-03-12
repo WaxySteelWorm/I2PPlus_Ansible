@@ -9,10 +9,10 @@
       apt: update_cache=yes force_apt_get=yes upgrade=yes
 
   tasks:
-    - name: Set SSH Key
-      become: true
-      ansible.builtin.shell: |
-        echo ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHrODiVwzLuqJOOUj8RfL+X9jn8K/wMujouCelQvRbJs >> /home/dfields/.ssh/authorized_keys
+ #   - name: Set SSH Key
+ #     become: true
+ #     ansible.builtin.shell: |
+ #       echo ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHrODiVwzLuqJOOUj8RfL+X9jn8K/wMujouCelQvRbJs >> /home/dfields/.ssh/authorized_keys
 
     # Need to create I2P user.
     - name: Create I2P User
