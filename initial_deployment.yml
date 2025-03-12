@@ -151,13 +151,13 @@
         name: tinyproxy
         state: present
 
-- name: Deploy tinyproxy configuration from vault
-  copy:
-    content: "{{ tinyproxy_config }}"
-    dest: /etc/tinyproxy/tinyproxy.conf
-    owner: root
-    group: root
-    mode: '0644'
+    - name: Deploy tinyproxy configuration from vault
+      copy:
+      content: "{{ tinyproxy_config }}"
+      dest: /etc/tinyproxy/tinyproxy.conf
+      owner: root
+      group: root
+      mode: '0644'
 
 - name: Install Tor and configure repository
   hosts: all
