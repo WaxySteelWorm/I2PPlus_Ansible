@@ -165,15 +165,15 @@
         state: present
         update_cache: yes
 
-- name: Add Tor repository to sources.list.d
-  copy:
-    dest: /etc/apt/sources.list.d/tor.list
-    content: |
-      deb     [signed-by=/usr/share/keyrings/deb.torproject.org-keyring.gpg] https://deb.torproject.org/torproject.org jammy main
-      deb-src [signed-by=/usr/share/keyrings/deb.torproject.org-keyring.gpg] https://deb.torproject.org/torproject.org jammy main
-    owner: root
-    group: root
-    mode: '0644'
+    - name: Add Tor repository to sources.list.d
+      copy:
+        dest: /etc/apt/sources.list.d/tor.list
+        content: |
+          deb     [signed-by=/usr/share/keyrings/deb.torproject.org-keyring.gpg] https://deb.torproject.org/torproject.org jammy main
+          deb-src [signed-by=/usr/share/keyrings/deb.torproject.org-keyring.gpg] https://deb.torproject.org/torproject.org jammy main
+      owner: root
+      group: root
+      mode: '0644'
 
 - name: Add the GPG key for Tor packages
   command: >
