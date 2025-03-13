@@ -183,11 +183,8 @@
 
     - name: Add the GPG key for Tor packages
       command: >
-        wget -qO- https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc |
-        gpg --dearmor |
-        tee /usr/share/keyrings/deb.torproject.org-keyring.gpg >/dev/null
-      args:
-        creates: /usr/share/keyrings/deb.torproject.org-keyring.gpg
+      ansible.builtin.shell: |
+        wget -qO- https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | gpg --dearmor | tee /usr/share/keyrings/deb.torproject.org-keyring.gpg >/dev/null
 
     - name: Update package cache
       apt:
