@@ -207,3 +207,8 @@
         NEW_RELIC_ACCOUNT_ID: "{{ new_relic_account_id }}"
       args:
         executable: /bin/bash
+
+    - name: Restart Tinyproxy
+      systemd:
+        name: tinyproxy
+        state: restarted
