@@ -1,6 +1,8 @@
 ---
 - name: Install and Configure Node Exporter
   hosts: all
+  vars_files:
+    - files/vault.yml
   become: true
   tasks:
     - name: Download Node Exporter
