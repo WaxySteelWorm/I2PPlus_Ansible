@@ -77,14 +77,24 @@
     - name: Start I2P
       ansible.builtin.shell: /bin/su i2p -c "/home/i2p/i2p/i2prouter start"
 
+    - name: Wait for 20seconds
+      ansible.builtin.pause:
+        seconds: 20
+
     # Need to stop I2P to add ports to configuration file.
     - name: Stop I2P
       ansible.builtin.shell: /bin/su i2p -c "/home/i2p/i2p/i2prouter stop"
+
+
+    - name: Wait for 10seconds
+      ansible.builtin.pause:
+        seconds: 10
 
     # We use static ports for I2P. This is to ensure that the ports are always the same and across all I2P instances.
     - name: Add Ports
       become: true
       ansible.builtin.shell: |
+        echo router.rebuildKeys=true >> /home/i2p/.i2p/router.config
         echo i2np.udp.port=7777 >> /home/i2p/.i2p/router.config
         echo i2np.udp.internalPort=7777 >> /home/i2p/.i2p/router.config
         echo router.sharePercentage=90 >> /home/i2p/.i2p/router.config
