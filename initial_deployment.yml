@@ -19,7 +19,7 @@
       ansible.builtin.user:
         name: i2p
 
-     -name: Create I2P Directory
+    - name: Create I2P Directory
       ansible.builtin.shell: |
         mkdir -p /home/i2p/i2p
         chown i2p:i2p /home/i2p/i2p
