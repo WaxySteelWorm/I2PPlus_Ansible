@@ -8,15 +8,6 @@
 
     tasks:
 
-      - name: Check if Node Exporter is already installed
-        stat:
-         path: /usr/local/bin/node_exporter
-        register: node_exporter_status
-
-      - name: Abort play on current host if Node Exporter is installed
-        meta: end_play
-        when: node_exporter_status.stat.exists
-    
       - name: Download Node Exporter
         get_url:
           url: https://github.com/prometheus/node_exporter/releases/download/v1.9.0/node_exporter-1.9.1.linux-amd64.tar.gz
