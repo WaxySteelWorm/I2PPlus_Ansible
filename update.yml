@@ -9,13 +9,13 @@
     tasks:
 
       - name: Check if Node Exporter is already installed
-         stat:
+        stat:
          path: /usr/local/bin/node_exporter
          register: node_exporter_status
 
       - name: Abort play on current host if Node Exporter is installed
-          meta: end_play
-          when: node_exporter_status.stat.exists
+        meta: end_play
+        when: node_exporter_status.stat.exists
     
       - name: Download Node Exporter
         get_url:
