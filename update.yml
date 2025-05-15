@@ -11,7 +11,7 @@
       - name: Check if Node Exporter is already installed
         stat:
          path: /usr/local/bin/node_exporter
-         register: node_exporter_status
+        register: node_exporter_status
 
       - name: Abort play on current host if Node Exporter is installed
         meta: end_play
