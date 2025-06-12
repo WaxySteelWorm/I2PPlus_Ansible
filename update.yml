@@ -25,6 +25,6 @@
     - name: Allow UFW from new IP
       become: true
       ansible.builtin.shell: |
-        ufw allow from {{ static_ip_new }}
+        ufw allow from {{ static_ip }}
 
 
