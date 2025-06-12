@@ -14,17 +14,9 @@
 
     tasks:
 
-    - name: Deploy new tinyproxy configuration
-      copy:
-        content: "{{ tinyproxy_config }}"
-        dest: /etc/tinyproxy/tinyproxy.conf
-        owner: root
-        group: root
-        mode: '0644'
-
-    - name: Allow UFW from new IP
+    - name: Restart TinyProxy
       become: true
       ansible.builtin.shell: |
-        ufw allow from {{ static_ip }}
+        systemctl restart tinyproxy
 
 
