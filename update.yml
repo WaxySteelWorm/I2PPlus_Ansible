@@ -5,69 +5,26 @@
       - files/vault.yml
     become: true
 
+    pre_tasks:
+    # Need to update apt-get to ensure that the latest packages are installed.
+    - name: Update Apt-Get
+      become: true
+      apt: update_cache=yes force_apt_get=yes upgrade=yes
+
 
     tasks:
 
-      - name: Download Node Exporter
-        get_url:
-          url: https://github.com/prometheus/node_exporter/releases/download/v1.9.1/node_exporter-1.9.1.linux-amd64.tar.gz
-          dest: /tmp/node_exporter-1.9.1.linux-amd64.tar.gz
-          mode: '0644'
-  
-      - name: Extract Node Exporter
-        unarchive:
-          src: /tmp/node_exporter-1.9.1.linux-amd64.tar.gz
-          dest: /tmp
-          remote_src: yes
-  
-      - name: Move Node Exporter binary to /usr/local/bin
-        copy:
-          src: /tmp/node_exporter-1.9.1.linux-amd64/node_exporter
-          dest: /usr/local/bin/node_exporter
-          remote_src: yes
-          mode: '0755'
-  
-      - name: Create Node Exporter user
-        user:
-          name: node_exporter
-          shell: /bin/false
-          system: yes
-          create_home: no
-  
-      - name: Create Node Exporter systemd service file
-        copy:
-          dest: /etc/systemd/system/node_exporter.service
-          content: |
-            [Unit]
-            Description=Node Exporter
-            Wants=network-online.target
-            After=network-online.target
-  
-            [Service]
-            User=node_exporter
-            Group=node_exporter
-            Type=simple
-            ExecStart=/usr/local/bin/node_exporter --web.listen-address=:9100
-  
-            [Install]
-            WantedBy=multi-user.target
-          mode: '0644'
-  
-      - name: Reload systemd
-        systemd:
-          daemon_reload: yes
-  
-      - name: Start and enable Node Exporter service
-        systemd:
-          name: node_exporter
-          state: started
-          enabled: yes
-  
-      - name: Check Node Exporter service status
-        command: systemctl status node_exporter
-        register: service_status
-        changed_when: false
-        
-      - name: Display service status
-        debug:
-          var: service_status.stdout_lines
+    - name: Deploy new tinyproxy configuration
+      copy:
+        content: "{{ tinyproxy_config }}"
+        dest: /etc/tinyproxy/tinyproxy.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Allow UFW from new IP
+      become: true
+      ansible.builtin.shell: |
+        ufw allow from {{ static_ip_new }}
+
+
